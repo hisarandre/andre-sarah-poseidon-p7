@@ -9,6 +9,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 
 import javax.sql.DataSource;
@@ -29,19 +31,31 @@ public class SecurityConfig {
     }
 
     @Bean
+    public AccessDeniedHandler accessDeniedHandler(){
+        return new CustomAccessDeniedHandler();
+    }
+    @Bean
+    public AuthenticationSuccessHandler authenticationSuccessHandler(){
+        return new CustomAuthenticationSuccessHandler();
+    }
+
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .csrf().disable()
                 .authorizeHttpRequests()
+                .requestMatchers( "/admin/**", "/app/secure/article-details").hasAuthority("ADMIN")
                 .requestMatchers("/bidList/**", "/curvePoint/**", "/rating/**", "/ruleName/**", "/trade/**").hasAnyAuthority("ADMIN", "USER")
-                .requestMatchers("/user/**", "/admin/**").hasAuthority("ADMIN")
                 .requestMatchers("/",
                         "/login",
-                        "/user/**",
-                        "/css/**")
+                        "/app/error",
+                        "/css/**"
+                )
                 .permitAll()
                 .and()
                 .formLogin()
-                .defaultSuccessUrl("/bidList/list")
+                .successHandler(authenticationSuccessHandler())
                 .and()
                 .logout()
                 .logoutUrl("/app-logout")
@@ -49,10 +63,13 @@ public class SecurityConfig {
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
                 .and()
+                .exceptionHandling()
+                .accessDeniedHandler(accessDeniedHandler())
+                .and()
                 .httpBasic();
+
         return http.build();
     }
-
     @Autowired
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(service);
