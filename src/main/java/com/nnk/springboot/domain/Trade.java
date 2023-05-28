@@ -83,6 +83,8 @@ public class Trade {
 
         //constructor
         public Trade(String account, String type) {
+                this.account = account;
+                this.type = type;
         }
 
 }

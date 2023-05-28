@@ -12,9 +12,6 @@ public class HomeController
 	@RequestMapping("/")
 	public String home(Model model)
 	{
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		System.out.println(authentication.getAuthorities());
-
 		return "home";
 	}
 

@@ -41,4 +41,7 @@ public class CurvePoint {
     private Timestamp creationDate;
 
     public CurvePoint(Integer i, double v, double v1) {
+        this.curveId = i;
+        this.term = v;
+        this.value = v1;
     }}
