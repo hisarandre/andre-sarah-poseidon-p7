@@ -23,7 +23,7 @@ public class CurveController {
     @Autowired
     private CurvePointService curvePointService;
 
-    private static Logger logger = LoggerFactory.getLogger(BidListController.class);
+    private static Logger logger = LoggerFactory.getLogger(CurveController.class);
 
     @RequestMapping("/curvePoint/list")
     public String home(Model model) {

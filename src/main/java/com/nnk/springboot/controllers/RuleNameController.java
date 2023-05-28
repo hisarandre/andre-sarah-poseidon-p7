@@ -21,7 +21,7 @@ public class RuleNameController {
     @Autowired
     RuleNameService ruleNameService;
 
-    private static Logger logger = LoggerFactory.getLogger(BidListController.class);
+    private static Logger logger = LoggerFactory.getLogger(RuleNameController.class);
 
 
     @RequestMapping("/ruleName/list")

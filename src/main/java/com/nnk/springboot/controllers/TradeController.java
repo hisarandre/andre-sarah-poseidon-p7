@@ -21,7 +21,7 @@ public class TradeController {
     @Autowired
     TradeService tradeService;
 
-    private static Logger logger = LoggerFactory.getLogger(BidListController.class);
+    private static Logger logger = LoggerFactory.getLogger(TradeController.class);
 
     @RequestMapping("/trade/list")
     public String home(Model model)

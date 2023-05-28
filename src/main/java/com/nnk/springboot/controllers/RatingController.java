@@ -1,7 +1,6 @@
 package com.nnk.springboot.controllers;
 
 import com.nnk.springboot.domain.Rating;
-import com.nnk.springboot.dto.CurvePointDTO;
 import com.nnk.springboot.services.RatingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +21,7 @@ public class RatingController {
     @Autowired
     RatingService ratingService;
 
-    private static Logger logger = LoggerFactory.getLogger(BidListController.class);
+    private static Logger logger = LoggerFactory.getLogger(RatingController.class);
 
     @RequestMapping("/rating/list")
     public String home(Model model) {

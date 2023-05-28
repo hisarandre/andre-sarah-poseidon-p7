@@ -2,7 +2,6 @@ package com.nnk.springboot.controllers;
 
 import com.nnk.springboot.domain.User;
 import com.nnk.springboot.repositories.UserRepository;
-import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +21,7 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
-    private static Logger logger = LoggerFactory.getLogger(BidListController.class);
+    private static Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @RequestMapping("/user/list")
     public String home(Model model)
