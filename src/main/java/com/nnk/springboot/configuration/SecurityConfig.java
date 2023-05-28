@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -14,53 +15,46 @@ import javax.sql.DataSource;
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     @Autowired
     private DataSource dataSource;
 
-    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.jdbcAuthentication()
-                .dataSource(dataSource)
-                .usersByUsernameQuery("select username, password, 'true' as enabled"
-                        + " from users"
-                        + " where username=?")
-                .authoritiesByUsernameQuery("select username, role , 'true' as enabled"
-                        + " from users"
-                        + " where username=?");
-    }
+    @Autowired MyUserDetailsService service;
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-/*    @Bean
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
-                .requestMatchers("/bidList/**", "/curvePoint/**", "/rating/**", "/ruleName/**", "/trade/**", "/app/secure/**").authenticated()
-                .anyRequest().authenticated()
+        http
+                .authorizeHttpRequests()
+                .requestMatchers("/bidList/**", "/curvePoint/**", "/rating/**", "/ruleName/**", "/trade/**").hasAnyAuthority("ADMIN", "USER")
+                .requestMatchers("/user/**", "/admin/**").hasAuthority("ADMIN")
+                .requestMatchers("/",
+                        "/login",
+                        "/user/**",
+                        "/css/**")
+                .permitAll()
                 .and()
                 .formLogin()
+                .defaultSuccessUrl("/bidList/list")
+                .and()
+                .logout()
+                .logoutUrl("/app-logout")
+                .logoutSuccessUrl("/")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
                 .and()
                 .httpBasic();
         return http.build();
-    }*/
-
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http.authorizeHttpRequests()
-                .requestMatchers("/")
-                .permitAll()
-                .requestMatchers("/user/**").hasRole("USER")
-                .requestMatchers("/bidList/**", "/curvePoint/**", "/rating/**", "/ruleName/**", "/trade/**", "/app/secure/**").authenticated()
-                .anyRequest().authenticated()
-                .and()
-                .formLogin()
-                .and()
-                .csrf().disable()
-                .build();
     }
 
+    @Autowired
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService(service);
+    }
 }
