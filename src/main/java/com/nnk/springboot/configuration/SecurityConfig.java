@@ -3,17 +3,23 @@ package com.nnk.springboot.configuration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+
 
 
 import javax.sql.DataSource;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
@@ -24,6 +30,7 @@ public class SecurityConfig {
     private DataSource dataSource;
 
     @Autowired MyUserDetailsService service;
+
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -39,15 +46,15 @@ public class SecurityConfig {
         return new CustomAuthenticationSuccessHandler();
     }
 
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf().disable()
                 .authorizeHttpRequests()
-                .requestMatchers( "/admin/**", "/app/secure/article-details").hasAuthority("ADMIN")
-                .requestMatchers("/bidList/**", "/curvePoint/**", "/rating/**", "/ruleName/**", "/trade/**").hasAnyAuthority("ADMIN", "USER")
-                .requestMatchers("/",
+                .requestMatchers( "/admin/**", "/app/secure/article-details","/user/**").hasAuthority("ADMIN")
+                .requestMatchers("/bidList/**", "/curvePoint/**", "/rating/**", "/ruleName/**", "/trade/**").authenticated()
+                .requestMatchers(
+                        "/",
                         "/login",
                         "/app/error",
                         "/css/**"
@@ -55,6 +62,9 @@ public class SecurityConfig {
                 .permitAll()
                 .and()
                 .formLogin()
+                .successHandler(authenticationSuccessHandler())
+                .and()
+                .oauth2Login()
                 .successHandler(authenticationSuccessHandler())
                 .and()
                 .logout()
@@ -66,10 +76,13 @@ public class SecurityConfig {
                 .exceptionHandling()
                 .accessDeniedHandler(accessDeniedHandler())
                 .and()
-                .httpBasic();
+                .rememberMe()
+                .key("uniqueAndSecret")
+                .tokenValiditySeconds(30);
 
         return http.build();
     }
+
     @Autowired
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(service);
